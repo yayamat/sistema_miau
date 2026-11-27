@@ -3,6 +3,7 @@ from datetime import datetime
 
 from models.aluno_model import *
 from controllers.aluno_controller import carregar_alunos
+from utils.validacoes import *
 
 # Caminho a partir da pasta do projeto.
 # Assim funciona mesmo se o terminal estiver em outra pasta.
@@ -106,10 +107,22 @@ def atualizar_usuario(email):
 
     for usuario in usuarios:
 
-        if usuario["email"] == email:
+        if usuario["email"].lower() == email.strip().lower():
 
-            usuario["nome"] = input("Novo nome: ")
-            usuario["senha"] = input("Nova senha: ")
+            novo_nome = input("Novo nome: ")
+
+            while validar_nome(novo_nome) == False:
+                print("Nome inválido.")
+                novo_nome = input("Novo nome: ")
+
+            nova_senha = input("Nova senha: ")
+
+            while nova_senha.strip() == "":
+                print("A senha não pode ficar em branco.")
+                nova_senha = input("Nova senha: ")
+
+            usuario["nome"] = novo_nome
+            usuario["senha"] = nova_senha
 
             encontrado = True
 
@@ -150,7 +163,9 @@ def gerar_relatorio():
     total_perfis = {"professor": 0, "aee": 0, "gestor": 0}
 
     for usuario in usuarios:
-        total_perfis[usuario["perfil"]] += 1
+        perfil = usuario["perfil"].strip().lower()
+        if perfil in total_perfis:
+            total_perfis[perfil] += 1
 
     total_apoio = {
         "ACOMPANHAMENTO AEE": 0,
@@ -165,7 +180,8 @@ def gerar_relatorio():
             aluno["dificuldade"]
         )
 
-        total_apoio[apoio] += 1
+        if apoio in total_apoio:
+            total_apoio[apoio] += 1
 
     data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
